@@ -16,7 +16,7 @@ jobs:
     - name: Scan for hardcoded secrets
       uses: docker://zricethezav/gitleaks:latest
       with:
-        args: detect -s /github/workflow/ -v --redact
+        args: detect -s /github/workflow -v --redact
   
   build_and_push:
     runs-on: ubuntu-latest
