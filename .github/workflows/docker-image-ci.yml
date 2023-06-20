@@ -6,6 +6,13 @@ on:
     branches: [ "main" ]
     
 jobs:
+  secret_scan:
+    runs-on: ubuntu-latest
+    container: zricethezav/gitleaks:latest
+    steps:
+    - name: Scan for hardcoded secrets
+        gitleaks detect -s . -v --redact
+  
   build_and_push:
     runs-on: ubuntu-latest
     env:
