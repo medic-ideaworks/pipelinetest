@@ -11,7 +11,7 @@ jobs:
     container: zricethezav/gitleaks:latest
     steps:
     - name: Scan for hardcoded secrets
-        gitleaks detect -s . -v --redact
+      run: gitleaks detect -s . -v --redact
   
   build_and_push:
     runs-on: ubuntu-latest
