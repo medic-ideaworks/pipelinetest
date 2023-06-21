@@ -8,8 +8,6 @@ on:
 jobs:  
   build_scan_push:
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: ${{ vars.IMAGE_NAME }}
 
     steps:
     - name: Checkout repository
@@ -28,14 +26,16 @@ jobs:
       run: gitleaks detect -s . -v --redact
       
     - name: Build docker image
-      run: docker build . --file Dockerfile --tag ideaworksmedic/testimage
+      run: |
+        export IMAGE_NAME=ideaworksmedic/testingimages:latest
+        docker build . --file Dockerfile --tag $IMAGE_NAME
       
     - name: Scan with Trivy
       run: |
         export TRIVY_VERSION=$(wget -qO - "https://api.github.com/repos/aquasecurity/trivy/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
         wget -q https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.deb
         sudo dpkg -i trivy_${TRIVY_VERSION}_Linux-64bit.deb
-        trivy image ideaworksmedic/testimage --ignore-unfixed
+        trivy image $IMAGE_NAME --ignore-unfixed
       
     - name: Push to Docker Hub
       env:
