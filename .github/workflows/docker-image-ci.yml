@@ -5,20 +5,8 @@ on:
   pull_request:
     branches: [ "main" ]
     
-jobs:
-  secret_scan:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      
-    - name: Scan for hardcoded secrets
-      uses: docker://zricethezav/gitleaks:latest
-      with:
-        args: detect -s . -v --redact
-  
-  build_and_push:
+jobs:  
+  build_scan_push:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{ vars.IMAGE_NAME }}
@@ -26,6 +14,18 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        fetch-depth: '0'
+
+    - name: Install Gitleaks
+      run: |
+        export GITLEAKS_VERSION=$(wget -qO - "https://api.github.com/repos/gitleaks/gitleaks/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+        wget -q https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
+        tar -xvf gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
+        sudo mv gitleaks /usr/local/bin/
+
+    - name: Run Gitleaks
+      run: gitleaks detect -s . -v --redact
       
     - name: Build docker image
       run: docker build . --file Dockerfile --tag ideaworksmedic/testimage
